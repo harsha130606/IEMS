@@ -1,7 +1,7 @@
 import axios from 'axios';
 
 const api = axios.create({
-  baseURL: 'https://iems-v9ux.onrender.com/api',
+  baseURL: 'https://iems-v9ux.onrender.com', // ✅ removed /api
   headers: {
     'Content-Type': 'application/json',
   },
@@ -14,6 +14,10 @@ api.interceptors.request.use(
     if (token) {
       config.headers.Authorization = `Bearer ${token}`;
     }
+
+    // 🔍 Debug (optional - remove later)
+    console.log("FINAL URL:", config.baseURL + config.url);
+
     return config;
   },
   (error) => Promise.reject(error)
