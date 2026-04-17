@@ -52,13 +52,16 @@ const submitInternship = async (req, res) => {
       endDate: new Date(endDate),
     };
 
+    // ✅ FIX: dynamic base URL
+    const baseUrl = `${req.protocol}://${req.get("host")}`;
+
     // Handle file uploads
     if (req.files) {
       if (req.files.certificate && req.files.certificate[0]) {
-        internshipData.certificate = `/uploads/${req.files.certificate[0].filename}`;
+        internshipData.certificate = `${baseUrl}/uploads/${req.files.certificate[0].filename}`;
       }
       if (req.files.lor && req.files.lor[0]) {
-        internshipData.lor = `/uploads/${req.files.lor[0].filename}`;
+        internshipData.lor = `${baseUrl}/uploads/${req.files.lor[0].filename}`;
       }
     }
 
@@ -84,9 +87,6 @@ const getInternships = async (req, res) => {
 };
 
 // @desc    Get attendance for student's own internship (read-only)
-// @route   GET /api/student/internships/:id/attendance
-// @access  Student
-// @guard   Internship must be Accepted
 const getAttendance = async (req, res) => {
   try {
     const internship = await Internship.findOne({
@@ -109,10 +109,7 @@ const getAttendance = async (req, res) => {
   }
 };
 
-// @desc    Submit a daily update (with optional file attachments)
-// @route   POST /api/student/internships/:id/submissions
-// @access  Student
-// @guard   Internship must be Accepted
+// @desc    Submit a daily update
 const addSubmission = async (req, res) => {
   try {
     const { title, workDone, description } = req.body;
@@ -134,12 +131,15 @@ const addSubmission = async (req, res) => {
       return res.status(403).json({ message: 'Daily updates can only be submitted for Accepted internships' });
     }
 
-    // Map uploaded files to schema format
+    // ✅ FIX: dynamic base URL
+    const baseUrl = `${req.protocol}://${req.get("host")}`;
+
+    // Map uploaded files
     const files = (req.files || []).map((f) => ({
       filename: f.filename,
       originalName: f.originalname,
       mimetype: f.mimetype,
-      path: `/uploads/${f.filename}`,
+      path: `${baseUrl}/uploads/${f.filename}`,
     }));
 
     const submission = await Submission.create({
@@ -157,10 +157,7 @@ const addSubmission = async (req, res) => {
   }
 };
 
-// @desc    Get student's own submissions for an internship
-// @route   GET /api/student/internships/:id/submissions
-// @access  Student
-// @guard   Internship must be Accepted
+// @desc    Get student's submissions
 const getSubmissions = async (req, res) => {
   try {
     const internship = await Internship.findOne({
